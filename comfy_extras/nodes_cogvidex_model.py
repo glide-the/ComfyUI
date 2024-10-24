@@ -428,16 +428,10 @@ def cogvideox_sampler(
 
             latent_model_input = torch.cat([latents] * 2) if do_classifier_free_guidance else latents
             latent_model_input = cogvideo_pipeline.scheduler.scale_model_input(latent_model_input, t)
-
+            latent_model_input = torch.cat([latent_model_input, delta_noise_adjust], dim=2)
             # broadcast to batch dimension in a way that's compatible with ONNX/Core ML
             timestep = t.expand(latent_model_input.shape[0])
-            if i == len(timesteps) - 1:
-                
-                image_rotary_emb = image_emb
-            elif i == 0:
-                image_rotary_emb = image_emb
-            else:
-                image_rotary_emb = None
+            image_rotary_emb = image_emb
             # predict noise model_output
             noise_pred = cogvideo_pipeline.transformer(
                 hidden_states=latent_model_input,
